@@ -15,8 +15,13 @@ export class Game extends Scene {
         this.bg = this.add.tileSprite(0, 0, width, height, 'background2').setOrigin(0.0, 0.0);
         this.add.sprite(width / 2, height / 2,'star').setScale(0.3);
 
-        this.parseGpx();
-        console.log(this.distance);
+        // this.parseGpx();
+        // console.log('this.distance', this.distance);
+
+        this.parseGpx().then(distance => {
+            this.distance = distance;
+            console.log('this.distance', this.distance);      
+        });
 
         const event = this.time.addEvent({
             delay: 1000,
@@ -56,7 +61,7 @@ export class Game extends Scene {
     }
     
     parseGpx() {
-        fetch(gpxFile) // GPX 파일 경로
+        return fetch(gpxFile) // GPX 파일 경로
             .then(response => response.text())
             .then(data => {
               // XML 문자열을 파싱하여 JavaScript 객체로 변환
@@ -65,8 +70,10 @@ export class Game extends Scene {
               let xmlDoc = parser.parseFromString(data, 'text/xml');
               console.log('xmlDoc', xmlDoc);
               gpx.parse(data);
-              console.log('gpx', gpx.tracks[0].distance.cumul);
-              this.distance =  gpx.tracks[0].distance.cumul;
+
+              return gpx.tracks[0].distance.cumul;
+              // console.log('gpx', gpx.tracks[0].distance.cumul);
+              // this.distance =  gpx.tracks[0].distance.cumul;
             })
             .catch(error => {
               console.error('Error fetching or parsing GPX file:', error);
