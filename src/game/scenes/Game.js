@@ -30,12 +30,26 @@ export class Game extends Scene {
         console.log('1초 지남');
         if(this.index == 0) {
             const moveValue = this.distance[this.index];
-            this.bg.tilePositionY -= moveValue*5;
+            // this.bg.tilePositionY -= moveValue*5;
+            const targetPositionY = this.bg.tilePositionY - moveValue * 5;
+            this.tweens.add({
+                targets: this.bg,
+                tilePositionY: targetPositionY,
+                duration: 2000,
+                ease: 'easeInout',
+            });
             console.log('moveValue.', moveValue);
         } else {
             console.log('moveValue !!!!!!!!!', this.distance[this.index], this.distance[this.index - 1]);
             const moveValue = this.distance[this.index] - this.distance[this.index - 1];
-            this.bg.tilePositionY -= moveValue*5;
+            // this.bg.tilePositionY -= moveValue*5;
+            const targetPositionY = this.bg.tilePositionY - moveValue * 5;
+            this.tweens.add({
+                targets: this.bg,
+                tilePositionY: targetPositionY,
+                duration: 2000,
+                ease: 'easeInOut',
+            });
             console.log('moveValue.', moveValue);
         }
         this.index++;
