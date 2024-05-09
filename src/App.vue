@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import Phaser from 'phaser';
-import { ref, toRaw } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import PhaserGame from './game/PhaserGame.vue';
 
 // The sprite can only be moved in the MainMenu Scene
@@ -74,7 +74,7 @@ const currentScene = (scene) => {
 </script>
 
 <template>
-    <PhaserGame ref="phaserRef" @current-active-scene="currentScene" />
+    <PhaserGame ref="phaserRef" @current-active-scene="currentScene"/>
     <div>
         <div>
             <button class="button" @click="changeScene">Change Scene</button>

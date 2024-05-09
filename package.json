@@ -25,6 +25,8 @@
         "build": "vite build --config vite/config.prod.mjs"
     },
     "dependencies": {
+        "file-loader": "^6.2.0",
+        "gpxparser": "^3.0.8",
         "phaser": "^3.80.1",
         "vue": "^3.4.20"
     },
