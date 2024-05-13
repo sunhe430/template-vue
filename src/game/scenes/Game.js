@@ -10,6 +10,10 @@ export class Game extends Scene {
     this.index = 0
     this.distance = []
     this.user2Distance = []
+    this.startTime = 0;
+    this.times = [];
+
+    this.speed = 0;
   }
 
   create() {
@@ -20,19 +24,27 @@ export class Game extends Scene {
     // this.parseGpx();
     // console.log('this.distance', this.distance);
 
-    this.parseGpx(gpxFile).then((distance) => {
-      this.distance = distance
+    this.parseGpx(gpxFile).then((gpx) => {
+        console.log('this.distance', gpx)
+      this.distance = gpx.tracks[0].distance.cumul;
+      this.times = gpx.tracks[0].points.map((x) => x.time);
       console.log('this.distance', this.distance)
+      console.log('this.distance', this.times)
     })
-    this.parseGpx(otherGpx).then((distance) => {
+    this.parseGpx(otherGpx).then((distance, times) => {
       this.user2Distance = distance
-      console.log('this.user2Distance', this.user2Distance)
     })
 
-    const event = this.time.addEvent({
-      delay: 1000,
-      callback: this.moveBg,
-      callbackScope: this,
+    // const event = this.time.addEvent({
+    //   delay: 1000,
+    //   callback: this.startTimer,
+    //   callbackScope: this,
+    //   loop: true
+    // })
+    const timer = this.time.addEvent({
+        delay: 500,
+        callback: this.startTimer,
+        callbackScope: this,
       loop: true
     })
   }
@@ -42,7 +54,7 @@ export class Game extends Scene {
     if (this.index == 0) {
       const moveValue = this.distance[this.index]
       // this.bg.tilePositionY -= moveValue*5;
-      const targetPositionY = this.bg.tilePositionY - moveValue * 5
+      const targetPositionY = this.bg.tilePositionY - moveValue * 10
       this.tweens.add({
         targets: this.bg,
         tilePositionY: targetPositionY,
@@ -53,7 +65,7 @@ export class Game extends Scene {
       console.log('moveValue !!!!!!!!!', this.distance[this.index], this.distance[this.index - 1])
       const moveValue = this.distance[this.index] - this.distance[this.index - 1]
       // this.bg.tilePositionY -= moveValue*5;
-      const targetPositionY = this.bg.tilePositionY - moveValue * 5
+      const targetPositionY = this.bg.tilePositionY - moveValue * 10
       this.tweens.add({
         targets: this.bg,
         tilePositionY: targetPositionY,
@@ -62,16 +74,20 @@ export class Game extends Scene {
       })
     }
     this.player2.y =
-      this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]) * 5
+      this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]) * 10
     this.tweens.add({
       targets: this.player2,
-      y: this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]) * 5,
+      y: this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]) * 10,
       duration: 1000,
       ease: 'easeInOut'
     })
     console.log('each value', this.distance[this.index], this.user2Distance[this.index])
     console.log('gap', this.distance[this.index] - this.user2Distance[this.index])
     this.index++
+  }
+
+  startTimer() {
+    this.startTime += 500;
   }
 
   parseGpx(gpxData) {
@@ -84,7 +100,8 @@ export class Game extends Scene {
         let xmlDoc = parser.parseFromString(data, 'text/xml')
         console.log('xmlDoc', xmlDoc)
         gpx.parse(data)
-        return gpx.tracks[0].distance.cumul
+        console.log('times', gpx.tracks[0].points);
+        return gpx;
         // console.log('gpx', gpx.tracks[0].distance.cumul);
         // this.distance =  gpx.tracks[0].distance.cumul;
       })
@@ -93,7 +110,36 @@ export class Game extends Scene {
       })
   }
 
-  update(time, delta) {}
+  setSpeed() {
+      console.log('this.index', this.index);
+        this.speed = (this.distance[this.index] - this.distance[this.index-1] / this.times[this.index] - this.times[this.index-1]);
+        console.log('speed', this.speed);
+        const moveValue = this.distance[this.index] - this.distance[this.index-1];
+        const targetPositionY = this.bg.tilePositionY - moveValue*10;
+        this.tweens.add({
+          targets: this.bg,
+          duration: this.times[this.index] - this.times[this.index-1],
+          tilePositionY: targetPositionY, 
+          ease: 'easeInout'
+        })
+      // this.bg.tilePositionY -= moveValue*5;
+  }
+
+  update(time, delta) {
+    // console.log('time', time);
+    // if(this.player2.y < -10 || this.player2.y > this.height + 10) {
+    //     console.log('화면에서 사라짐');
+    // }
+    // 테스트 조건 : 현재와 다음 시간 차이와 흐른 타이머 시간을 비교
+    // 실제 : 현재시간과 가장 최근에 받아온 gpx 데이터의 시간을 비교
+    if(this.times[this.index+1] - this.times[this.index] <= this.startTime) {
+        console.log('this.index', this.index);
+        console.log('start!', this.times[this.index+1] - this.times[this.index]);
+        this.index = this.index+1;
+        this.setSpeed();
+        this.startTime = 0;
+    }
+  }
 
   changeScene() {
     this.scene.start('GameOver')
