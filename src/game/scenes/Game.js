@@ -42,7 +42,7 @@ export class Game extends Scene {
     //   loop: true
     // })
     const timer = this.time.addEvent({
-        delay: 500,
+        delay: 1000,
         callback: this.startTimer,
         callbackScope: this,
       loop: true
@@ -87,7 +87,8 @@ export class Game extends Scene {
   }
 
   startTimer() {
-    this.startTime += 500;
+    this.startTime += 1000;
+    this.speed = (this.distance[this.index] - this.distance[this.index - 1]) / this.startTime;
   }
 
   parseGpx(gpxData) {
@@ -126,19 +127,27 @@ export class Game extends Scene {
   }
 
   update(time, delta) {
-    // console.log('time', time);
-    // if(this.player2.y < -10 || this.player2.y > this.height + 10) {
-    //     console.log('화면에서 사라짐');
-    // }
-    // 테스트 조건 : 현재와 다음 시간 차이와 흐른 타이머 시간을 비교
-    // 실제 : 현재시간과 가장 최근에 받아온 gpx 데이터의 시간을 비교
+    this.bg.tilePositionY -= this.speed/3;
+    
+    
+    // 데이터가 새로 들어왔을 때 speed 갱신 해야함.
+    // 테스트 조건 : 현재와 다음 시간 차이만큼 timer가 흘렀으면 데이터가 새로 들어왔다고 가정.
+    // 실제 : 현재 시간이 가장 최근 데이터 값의 시간보다 크면 데이터가 새로 들어왔다고 가정.
     if(this.times[this.index+1] - this.times[this.index] <= this.startTime) {
-        console.log('this.index', this.index);
+        
         console.log('start!', this.times[this.index+1] - this.times[this.index]);
-        this.index = this.index+1;
-        this.setSpeed();
+        if(this.index == 0) { // this.distance[0]이 0이 아님
+            this.speed = this.distance[this.index] / ((this.times[this.index+1] - this.times[this.index])/1000);
+        } else {
+            this.speed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[0])/1000));
+        }
+        console.log('this.speed', this.speed);
+        console.log('this.distance gap', this.distance[this.index]);
         this.startTime = 0;
+        this.index = this.index+1;
     }
+    // 별도 speed 갱신 조건.
+    // if(현재거리 - 직전거리 === 0) => this.speed = 0으로
   }
 
   changeScene() {
