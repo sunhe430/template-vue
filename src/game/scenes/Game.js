@@ -88,7 +88,6 @@ export class Game extends Scene {
 
   startTimer() {
     this.startTime += 1000;
-    this.speed = (this.distance[this.index] - this.distance[this.index - 1]) / this.startTime;
   }
 
   parseGpx(gpxData) {
@@ -127,7 +126,6 @@ export class Game extends Scene {
   }
 
   update(time, delta) {
-    this.bg.tilePositionY -= this.speed/3;
     
     
     // 데이터가 새로 들어왔을 때 speed 갱신 해야함.
@@ -136,18 +134,32 @@ export class Game extends Scene {
     if(this.times[this.index+1] - this.times[this.index] <= this.startTime) {
         
         console.log('start!', this.times[this.index+1] - this.times[this.index]);
-        if(this.index == 0) { // this.distance[0]이 0이 아님
-            this.speed = this.distance[this.index] / ((this.times[this.index+1] - this.times[this.index])/1000);
+        if(this.index > 0) { // this.distance[0]이 0이 아님
+            if(this.index == 1) {
+              const beforeDistance = this.distance[this.index];
+              const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
+              const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
+              this.speed = this.speed + (beforeDistance/beforeTime - nowSpeed);
+            } else {
+              const beforeDistance = this.distance[this.index - 1] - this.distance[this.index -2];
+              const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
+              const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
+              this.speed = this.speed + (beforeDistance/beforeTime - nowSpeed);
+            }
+            console.log('this.speed', this.speed);
         } else {
-            this.speed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[0])/1000));
+          console.log('index == 0');
+          this.speed = this.distance[this.index] / ((this.times[this.index+1] - this.times[this.index])/1000);
         }
-        console.log('this.speed', this.speed);
-        console.log('this.distance gap', this.distance[this.index]);
         this.startTime = 0;
-        this.index = this.index+1;
+        this.index++;
     }
     // 별도 speed 갱신 조건.
     // if(현재거리 - 직전거리 === 0) => this.speed = 0으로
+
+    // this.bg.tilePositionY -= this.speed/5;
+    this.bg.tilePositionY -= this.speed/5;
+
   }
 
   changeScene() {
