@@ -143,7 +143,7 @@ export class Game extends Scene {
               const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
               const beforeSpeed = beforeDistance / beforeTime
               const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
-              this.speed = nowSpeed + (beforeSpeed - nowSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
+              this.speed = beforeSpeed + (beforeSpeed - nowSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
             } else {
             console.log('index', this.index);
 
@@ -153,7 +153,7 @@ export class Game extends Scene {
               const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
               const beforeSpeed = beforeDistance / beforeTime;
               const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
-              this.speed = nowSpeed + (nowSpeed - beforeSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
+              this.speed = beforeSpeed + (nowSpeed - beforeSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
               console.log('nowSpeed', nowSpeed);
             }
             if ((this.distance[this.index] - this.distance[this.index - 1]) <= 0) {
@@ -168,7 +168,7 @@ export class Game extends Scene {
       // this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index])*5;
       this.tweens.add({
         targets: this.player2,
-        y: this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]),
+        y: this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index])*3,
         duration: 1000,
         ease: 'easeInOut'
       })
