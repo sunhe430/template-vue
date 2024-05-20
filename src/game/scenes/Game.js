@@ -12,6 +12,7 @@ export class Game extends Scene {
     this.user2Distance = []
     this.startTime = 0;
     this.times = [];
+    this.user2Times = [];
 
     this.speed = 0;
   }
@@ -31,8 +32,9 @@ export class Game extends Scene {
       console.log('this.distance', this.distance)
       console.log('this.distance', this.times)
     })
-    this.parseGpx(otherGpx).then((distance, times) => {
-      this.user2Distance = distance
+    this.parseGpx(otherGpx).then((gpx) => {
+      this.user2Distance = gpx.tracks[0].distance.cumul;
+      this.user2Times = gpx.tracks[0].points.map((x) => x.time);
     })
 
     // const event = this.time.addEvent({
@@ -136,29 +138,53 @@ export class Game extends Scene {
         console.log('start!', this.times[this.index+1] - this.times[this.index]);
         if(this.index > 0) { // this.distance[0]이 0이 아님
             if(this.index == 1) {
-              const beforeDistance = this.distance[this.index];
+              const beforeDistance = this.distance[0];
+              console.log('beforeDistance', beforeDistance);
               const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
+              const beforeSpeed = beforeDistance / beforeTime
               const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
-              this.speed = this.speed + (beforeDistance/beforeTime - nowSpeed);
+              this.speed = this.speed + (beforeSpeed - nowSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
             } else {
+            console.log('index', this.index);
+
+              console.log('beforeDistance', this.distance[this.index - 1], this.distance[this.index -2]);
+
               const beforeDistance = this.distance[this.index - 1] - this.distance[this.index -2];
               const beforeTime = (this.times[this.index] - this.times[this.index - 1])/1000;
+              const beforeSpeed = beforeDistance / beforeTime;
               const nowSpeed = ((this.distance[this.index] - this.distance[this.index - 1]) / ((this.times[this.index+1] - this.times[this.index])/1000))
-              this.speed = this.speed + (beforeDistance/beforeTime - nowSpeed);
+              this.speed = this.speed + (nowSpeed - beforeSpeed)/((this.times[this.index+1] - this.times[this.index])/1000);
+              console.log('nowSpeed', nowSpeed);
             }
-            console.log('this.speed', this.speed);
-        } else {
-          console.log('index == 0');
-          this.speed = this.distance[this.index] / ((this.times[this.index+1] - this.times[this.index])/1000);
-        }
-        this.startTime = 0;
+            if ((this.distance[this.index] - this.distance[this.index - 1]) <= 0) {
+              this.speed = 0;
+            }
+            console.log('timeDifference','Player1Time', ((this.times[this.index] - this.times[0])/1000), 'Player2Time', ((this.user2Times[this.index] - this.user2Times[0])/1000))
+          } else {
+            console.log('index == 0');
+            this.speed = this.distance[this.index] / ((this.times[this.index+1] - this.times[this.index])/1000);
+          }
+      //     this.player2.y =
+      // this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index])*5;
+      this.tweens.add({
+        targets: this.player2,
+        y: this.scale.height / 2 + (this.distance[this.index] - this.user2Distance[this.index]),
+        duration: 1000,
+        ease: 'easeInOut'
+      })
+          console.log('this.speed', this.speed);
+          this.startTime = 0;
         this.index++;
     }
     // 별도 speed 갱신 조건.
     // if(현재거리 - 직전거리 === 0) => this.speed = 0으로
 
     // this.bg.tilePositionY -= this.speed/5;
-    this.bg.tilePositionY -= this.speed/5;
+    if(this.speed > 0) {
+      this.bg.tilePositionY -= this.speed/5;
+    } else {
+      this.speed = 0;
+    }
 
   }
 
